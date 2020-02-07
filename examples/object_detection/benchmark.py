@@ -25,6 +25,13 @@ def get_dataset(args):
         test_dataset = task.Dataset(name=args.dataset_name, Train=False)
         return (train_dataset, test_dataset)        
 
+    if 'coco' in args.dataset_name:
+        logging.info('Please follow this instruction to download dataset: \
+            https://gluon-cv.mxnet.io/build/examples_datasets/mscoco.html#sphx-glr-build-examples-datasets-mscoco-py')
+        train_dataset = task.Dataset(name=args.dataset_name, root=args.dataset_root, format='coco')
+        test_dataset = task.Dataset(name=args.dataset_name, root=args.dataset_root, format='coco', Train=False)
+        return (train_dataset, test_dataset)        
+
     # custom datset. 
     if args.dataset_name in dataset_dict: 
         url, index_file_name_trainval, index_file_name_test, classes, \
@@ -42,8 +49,10 @@ def get_dataset(args):
         index_file_name_test = args.index_file_name_test
         classes = args.classes
         
-    train_dataset = task.Dataset(data_root, index_file_name=index_file_name_trainval, classes=classes)
-    test_dataset = task.Dataset(data_root, index_file_name=index_file_name_test, classes=classes, Train=False)
+    train_dataset = task.Dataset(data_root, index_file_name=index_file_name_trainval, 
+                                 classes=classes, format=args.dataset_format)
+    test_dataset = task.Dataset(data_root, index_file_name=index_file_name_test, 
+                                classes=classes, format=args.dataset_format, Train=False)
 
     return (train_dataset, test_dataset)        
 
@@ -67,18 +76,20 @@ if __name__ == '__main__':
     # use coco pre-trained model for custom datasets
     transfer = None if ('voc' in args.dataset_name) or ('coco' in args.dataset_name) else 'coco' 
     detector = task.fit(dataset_train,
-                        num_trials=30,
-                        epochs=epochs,
-                        net=ag.Categorical('darknet53', 'mobilenet1.0'),
-                        lr=ag.Categorical(1e-2, 5e-3, 1e-3, 5e-4, 1e-4, 5e-5),
-                        transfer=transfer,
-                        data_shape=ag.Categorical(320, 416),
+                        num_trials=1,
+                        epochs=100,
+                        net=ag.Categorical('darknet53'),
+                        lr=ag.Categorical(1e-3),
+                        transfer=None,
+                        data_shape=ag.Categorical(320),
                         ngpus_per_trial=1,
                         batch_size=8,
-                        lr_decay_epoch=ag.Categorical('80,90','85,95'),
-                        warmup_epochs=ag.Int(1, 10),
-                        syncbn=ag.Bool(), 
-                        label_smooth=ag.Bool(), 
+                        lr_decay_epoch=ag.Categorical('80,90'),
+                        warmup_epochs=2,
+                        no_mixup_epochs=20,
+                        syncbn=True,
+                        label_smooth=True,
+                        no_wd=True,
                         time_limits=time_limits,
                         dist_ip_addrs = [])
 

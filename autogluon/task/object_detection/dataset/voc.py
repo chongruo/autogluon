@@ -115,7 +115,7 @@ class CustomVOCDetectionBase(gdata.VOCDetection):
 
 
 @obj()
-class CustomVOCDetection():
+class CustomVOCDetection(DatasetBase):
     """Custom Dataset which follows protocol/formatting of the well-known VOC object detection dataset.
     
     Parameters

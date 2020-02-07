@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def get_dataset(root='~/.mxnet/datasets/voc', index_file_name='trainval', name=None, \
-                classes=None, format='voc', Train=True, **kwargs):
+                classes=None, format='voc', Train=True, data_shape=320, **kwargs):
     """ Load dataset to use for object detection, which must be in either VOC or COCO format.
         
     Parameters
@@ -55,7 +55,17 @@ def get_dataset(root='~/.mxnet/datasets/voc', index_file_name='trainval', name=N
 
     elif format=='coco':
         logger.info(">>> create dataset(COCO format)")
-        return COCO(*args, **kwargs)
+
+        # built-in dataset
+        if name:
+            if Train:
+                splits = 'instances_train2017'
+            else:
+                splits= 'instances_val2017' 
+        else:  # custom dataset
+            splits = index_file_name
+        return CustomCOCODetection(root, splits, name, classes, data_shape, **kwargs)
+
     else:
         raise NotImplementedError('Other data formats are not implemented.')
 

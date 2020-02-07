@@ -29,11 +29,12 @@ from ...core import *
 from ...utils.mxutils import collect_params
 from ...utils import tqdm
 
-def get_dataloader(net, train_dataset, val_dataset, data_shape, batch_size, num_workers, args):
+def get_dataloader(net, train_dataset, val_dataset, data_shape, batch_size, num_workers, args, eval_metric_fn):
     """Get dataloader."""
     # when it is not in final_fit stage and val_dataset is not provided, we randomly sample (1 - args.split_ratio) data as our val_dataset
     if (not args.final_fit) and (not val_dataset):
         train_dataset, val_dataset = _train_val_split(train_dataset, args.split_ratio)
+    eval_metric = eval_metric_fn(val_dataset._dataset)
 
     width, height = data_shape, data_shape
     batchify_fn = Tuple(*([Stack() for _ in range(6)] + [Pad(axis=0, pad_val=-1) for _ in range(1)]))  # stack image, all targets generated
@@ -53,7 +54,7 @@ def get_dataloader(net, train_dataset, val_dataset, data_shape, batch_size, num_
         val_loader = gluon.data.DataLoader(
             val_dataset.transform(YOLO3DefaultValTransform(width, height)),
             batch_size, False, batchify_fn=val_batchify_fn, last_batch='keep', num_workers=num_workers)
-    return train_loader, val_loader
+    return train_loader, val_loader, eval_metric
 
 def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
@@ -262,10 +263,10 @@ def train_object_detection(args, reporter):
 
 
     # training data
-    train_dataset, eval_metric = args.dataset.get_dataset_and_metric()
-    train_data, val_data = get_dataloader(
-        async_net, train_dataset, None, args.data_shape, args.batch_size, args.num_workers, args)
-
+    train_dataset, eval_metric_fn = args.dataset.get_dataset_and_metric()
+    train_data, val_data, eval_metric = get_dataloader(
+        async_net, train_dataset, None, args.data_shape, args.batch_size, args.num_workers, args, eval_metric_fn)
+    
     # training
     train(net, train_data, val_data, eval_metric, ctx, args, reporter, args.final_fit)
 
