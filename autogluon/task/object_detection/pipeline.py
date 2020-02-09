@@ -35,6 +35,11 @@ def get_dataloader(net, train_dataset, val_dataset, data_shape, batch_size, num_
     if (not args.final_fit) and (not val_dataset):
         train_dataset, val_dataset = _train_val_split(train_dataset, args.split_ratio)
     eval_metric = eval_metric_fn(val_dataset._dataset)
+    
+    # mixup 
+    if args.mixup:
+        from gcv.data import MixupDetection
+        train_dataset = MixupDetection(train_dataset)
 
     width, height = data_shape, data_shape
     batchify_fn = Tuple(*([Stack() for _ in range(6)] + [Pad(axis=0, pad_val=-1) for _ in range(1)]))  # stack image, all targets generated
@@ -141,7 +146,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args, reporter, final_fit
     fh = logging.FileHandler(log_file_path)
     logger.addHandler(fh)
     logger.info(args)
-    #logger.info('Start training from [Epoch {}]'.format(args.start_epoch))
+    logger.info('Start training from [Epoch {}]'.format(args.start_epoch))
     best_map = [0]
 
     pre_current_map = 0
@@ -222,6 +227,7 @@ def train_object_detection(args, reporter):
 
     # training contexts
     ctx = [mx.gpu(i) for i in range(args.num_gpus)] if args.num_gpus > 0 else [mx.cpu()]
+    ctx = ctx if ctx else [mx.cpu()]
 
     net_name = '_'.join(('yolo3', args.net, 'custom'))
     args.save_prefix += net_name

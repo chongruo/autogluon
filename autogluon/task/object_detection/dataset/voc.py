@@ -148,7 +148,12 @@ class CustomVOCDetection(DatasetBase):
                                               root=root,
                                               splits=splits)
 
-        self.metric = VOC07MApMetric(iou_thresh=0.5, class_names=self.dataset.classes)
+        def get_metric(classes):
+            def metric_fn(val_dataset):
+                return VOC07MApMetric(iou_thresh=0.5, class_names=classes)
+            return metric_fn
+
+        self.metric = get_metric(self.dataset.classes)
 
     def get_dataset_and_metric(self):
         return (self.dataset, self.metric)
@@ -172,5 +177,8 @@ class CustomVOCDetection(DatasetBase):
 
         classes = sorted(classes)
         return classes
+    
+    def get_dataset_name(self):
+        return 'voc'
 
 

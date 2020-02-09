@@ -66,14 +66,7 @@ class CustomCOCODetection(DatasetBase):
             return metric_fn
 
         self.metric = get_metric(data_shape)
-
         
-        #TODO: whether to use the code below
-        """
-        # coco validation is slow, consider increase the validation interval
-        if args.val_interval == 1:
-            args.val_interval = 10
-        """
     
     def get_dataset_and_metric(self):
         return (self.dataset, self.metric)
