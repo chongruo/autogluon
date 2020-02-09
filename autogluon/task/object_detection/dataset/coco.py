@@ -52,12 +52,20 @@ class CustomCOCODetection(DatasetBase):
     Dataset object that can be passed to `task.fit()`, which is actually an :class:`autogluon.space.AutoGluonObject`. 
     To interact with such an object yourself, you must first call `Dataset.init()` to instantiate the object in Python.
     """
-    def __init__(self, root, splits, name, classes, data_shape, **kwargs):
+    def __init__(self, root, splits, name, classes, data_shape, Train, **kwargs):
         super().__init__()
+    
+        if Train:
+            self.dataset = CustomCOCODetectionBase(classes=classes,
+                                                root=root,
+                                                splits=splits,
+                                                use_crowd=False)
+        else:
+            self.dataset = CustomCOCODetectionBase(classes=classes,
+                                                root=root,
+                                                splits=splits,
+                                                skip_empty=False)
 
-        self.dataset = CustomCOCODetectionBase(classes=classes,
-                                               root=root,
-                                               splits=splits)
 
         def get_metric(data_shape):
             def metric_fn(val_dataset):

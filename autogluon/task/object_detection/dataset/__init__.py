@@ -64,7 +64,7 @@ def get_dataset(root='~/.mxnet/datasets/voc', index_file_name='trainval', name=N
                 splits= 'instances_val2017' 
         else:  # custom dataset
             splits = index_file_name
-        return CustomCOCODetection(root, splits, name, classes, data_shape, **kwargs)
+        return CustomCOCODetection(root, splits, name, classes, data_shape, Train, **kwargs)
 
     else:
         raise NotImplementedError('Other data formats are not implemented.')

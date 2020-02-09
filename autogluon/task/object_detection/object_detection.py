@@ -41,7 +41,7 @@ class ObjectDetection(BaseTask):
             epochs=50,
             num_trials=2,
             nthreads_per_trial=12,
-            num_workers=32,
+            num_workers=16,
             ngpus_per_trial=1,
             hybridize=True,
             search_strategy='random',

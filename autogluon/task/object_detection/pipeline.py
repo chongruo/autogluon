@@ -40,6 +40,8 @@ def get_dataloader(net, train_dataset, val_dataset, data_shape, batch_size, num_
     if args.mixup:
         from gcv.data import MixupDetection
         train_dataset = MixupDetection(train_dataset)
+    if args.num_samples < 0:
+        args.num_samples = len(train_dataset)
 
     width, height = data_shape, data_shape
     batchify_fn = Tuple(*([Stack() for _ in range(6)] + [Pad(axis=0, pad_val=-1) for _ in range(1)]))  # stack image, all targets generated
